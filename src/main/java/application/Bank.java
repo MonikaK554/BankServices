@@ -1,9 +1,15 @@
 package application;
 
+import database.dao.AccountDataDao;
+import database.dao.ClientDataDao;
+import database.daoImpl.AccountDataImpl;
+import database.daoImpl.ClientDataImpl;
+import database.entity.AccountData;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.stream.Collectors;
+import java.util.Scanner;
 
 
 public class Bank {
@@ -11,67 +17,73 @@ public class Bank {
     static final String name = "MBank";
 
     public static List<String> accountNumberUniqueList = new ArrayList<>();
-    public static List<Integer> clientUniqueIdList = new ArrayList<>();
+    public static List<Integer> clientUniquePinList = new ArrayList<>();
 
-    public static List<Account> allAccounts = new ArrayList<>();
-    public static List<Client> allClients = new ArrayList<>();
+    static Scanner scanner = new Scanner(System.in);
+    static ClientDataDao clientDataImpl = new ClientDataImpl();
+    static AccountDataDao accountDataImpl = new AccountDataImpl();
 
-
-    public static long createId() {
+    public static Integer createPin() {
         Random random = new Random();
-        int[] ids = new int[4];
-        String id = "";
-        for (int i = 0; i < ids.length; i++) {
-            ids[i] = random.nextInt(10);
-            id = id + ids[i];
-
+        int[] pins = new int[4];
+        String pin = "";
+        for (int i = 0; i < pins.length; i++) {
+            pins[i] = random.nextInt(10);
+            pin = pin + pins[i];
         }
 
-        int checkedId = Integer.parseInt(id);
+        int checkedPin = Integer.parseInt(pin);
 
-        if (!clientUniqueIdList.contains(checkedId)) {
-            clientUniqueIdList.add(checkedId);
-            return checkedId;
+        if (!clientUniquePinList.contains(checkedPin)) {
+            clientUniquePinList.add(checkedPin);
+            return checkedPin;
         } else {
-            System.out.println("Błędny numer id.");
+            System.out.println("Błędny numer pin wygenerowany.");
             return 0;
         }
-
     }
 
     public static void showAllClients() {
-        allClients.stream()
-                .map(client -> client.getSurname() + " " + client.getName() + client.getListOfClientAccounts())
-                .sorted()
-                .forEach(System.out::println);
+
+        ClientDataImpl clientData = new ClientDataImpl();
+        clientData.findAll().forEach(client -> System.out.println(client.getName() + " " + client.getSurname() + " " + client.getPesel()));
     }
+
 
     public static void showAllAccounts() {
-        allAccounts.stream().forEach(System.out::println);
+
+        AccountDataDao accountData = new AccountDataImpl();
+        accountData.findAll().forEach(account -> System.out.println(account.getAccountType() + " " + account.getBalance() + " " + account.getAccountNumber()));
     }
 
-    public static List<Client> deleteClientIfHasNoAccounts() {
-        List<Client> onlyClientsWithAccounts = allClients.stream()
-                .filter(client -> client.getListOfClientAccounts() != null)
-                .collect(Collectors.toList());
 
-        System.out.println("Tylko klienci z otwartymi rachunkami");
-        allClients = onlyClientsWithAccounts;
-        return onlyClientsWithAccounts;
+    public static void deleteClient() {
+
+        System.out.println("Podaj id klienta, którego chcesz usunąć.");
+        Integer givenId = scanner.nextInt();
+
+        accountDataImpl.deleteAllAccountsWhileDeletingClient(givenId);
+        clientDataImpl.deleteById(givenId);
+
+        System.out.println("Operacja usunięcia klienta się powiodła.");
+
     }
 
-    public static List<Client> deleteAccountIfBalanceIsZero() {
+    public static void deleteAccount() {
 
-        List<Client> clientsWithBalanceMoreThanZero = allClients.stream()
-                .filter(client -> client.getListOfClientAccounts().removeIf(account -> account.getBalance() == 0))
-                .collect(Collectors.toList());
+        System.out.println("Podaj id klienta.");
+        Integer givenId = scanner.nextInt();
+        scanner.nextLine();
 
-        return clientsWithBalanceMoreThanZero;
-    }
+        System.out.println("Podaj numer porządkowy konta, które ma zostać usunięte.");
+        System.out.println();
 
-    @Override
-    public String toString() {
-        return "Bank{" +
-                Bank.name;
+        List<AccountData> listOfClientAccounts = clientDataImpl.findById(givenId).getAccountList();
+        listOfClientAccounts.forEach(accountData -> System.out.println("Numer porządkowy " + accountData.getAccountId() + " " + accountData.getAccountType() + " " + accountData.getBalance()));
+
+        Integer accountIdToDelete = scanner.nextInt();
+        accountDataImpl.deleteByAccountId(accountIdToDelete);
+        System.out.println("Konto zostało usunięte.");
+
     }
 }

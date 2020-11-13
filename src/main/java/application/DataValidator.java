@@ -17,7 +17,7 @@ public class DataValidator {
         System.out.println("Miesiąc " + month);
         System.out.println("Dzień " + day);
 
-        if (peselGivenToString.length() == 11 && year > 10 && month > 0 && month < 13) {
+        if (peselGivenToString.length() == 11 && month > 0 && month < 13) {
 
             if ((day > 0 && day < 32) &&
                     (month == 1 || month == 3 || month == 5 || month == 7 || month == 8 || month == 10 ||
@@ -28,6 +28,7 @@ public class DataValidator {
                     (month == 4 || month == 6 || month == 9 ||
                             month == 11)) {
                 System.out.println("Przypadek 2");
+
 
             } else if (month == 2 && day > 0 && day < 30) {
                 System.out.println("Przypadek 3");
@@ -43,15 +44,18 @@ public class DataValidator {
                     return false;
                 }
 
+
             } else {
                 System.out.println("Przypadek 4");
                 return false;
             }
 
+
         } else {
             System.out.println("Przypadek 5 ");
             return false;
         }
+
 
         int sum = 1 * Integer.parseInt(peselGivenToString.substring(0, 1)) +
                 3 * Integer.parseInt(peselGivenToString.substring(1, 2)) +
@@ -68,6 +72,7 @@ public class DataValidator {
         sum %= 10;
 
         System.out.println("Suma kontrolna :" + sum);
+
 
         if (sum == Integer.parseInt(peselGivenToString.substring(10))) {
             System.out.println("Walidacja nr PESEL przebiegła pomyślnie.");
@@ -96,6 +101,7 @@ public class DataValidator {
 
         } else {
             return false;
+
         }
     }
 }
